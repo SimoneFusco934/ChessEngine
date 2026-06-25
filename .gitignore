@@ -1,0 +1,5 @@
+*.o
+stockfish commands.txt
+todo.txt
+ChessAI
+moveTest
