@@ -1,11 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <string>
+#include "../Core/enums.hpp"
 
-#define MAX_DEPTH 512 // 64
-
-enum CastlingRights{
+enum CastlingRights : uint8_t {
   WK = 1,
   WQ = 2,
   BK = 4,
@@ -63,7 +61,7 @@ struct alignas(64) Position {
 
       if(c >= '0' && c <= '9'){
         for(int i = 0; i < c - '0'; i++){
-          board[((7 - (board_index / 8)) * 8) + (board_index % 8)] = -1;
+          board[((7 - (board_index / 8)) * 8) + (board_index % 8)] = NO_PIECE;
           board_index++;
         }
         continue;
@@ -71,15 +69,15 @@ struct alignas(64) Position {
 
       int square = (7 - (board_index / 8)) * 8 + board_index % 8;
 
-      int piece_index = -1;
+      int piece_index = NO_PIECE;
 
       switch (tolower(c)){
-        case 'k': piece_index = 0; break;
-        case 'q': piece_index = 1; break;
-        case 'b': piece_index = 2; break;
-        case 'n': piece_index = 3; break;
-        case 'r': piece_index = 4; break;
-        case 'p': piece_index = 5; break;
+        case 'k': piece_index = KING; break;
+        case 'q': piece_index = QUEEN; break;
+        case 'b': piece_index = BISHOP; break;
+        case 'n': piece_index = KNIGHT; break;
+        case 'r': piece_index = ROOK; break;
+        case 'p': piece_index = PAWN; break;
       }
 
       if(islower(c)){
@@ -90,9 +88,9 @@ struct alignas(64) Position {
       board[square] = piece_index;
 
       if(islower(c)){
-        occupied_squares_bitboard[1] |= (1ULL << square);
+        occupied_squares_bitboard[BLACK] |= (1ULL << square);
       }else{
-        occupied_squares_bitboard[0] |= (1ULL << square);
+        occupied_squares_bitboard[WHITE] |= (1ULL << square);
       }
       
       board_index++;
@@ -104,9 +102,9 @@ struct alignas(64) Position {
     // lettura turno
     char c_turn = fen_string[string_index++];
     if(c_turn == 'w'){
-      turn = 0;
+      turn = WHITE;
     }else{
-      turn = 1;
+      turn = BLACK;
     }
 
     // space
@@ -159,30 +157,3 @@ struct alignas(64) Position {
     
   };
 };
-
-
-struct alignas(64) MoveList {
-
-  uint16_t moves[MAX_DEPTH * 128] = {0};
-
-  // DEBUG
-  //uint16_t moves[2000000] = {0};
-
-  int head = 0;
-
-};
-
-struct MoveMetadata {
-  uint16_t move;
-  uint8_t castling_rights;
-  uint8_t captured_piece;
-  int enpassant_square;
-};
-
-struct alignas(64) MoveStack {
-  MoveMetadata prev_moves[64];
-};
-
-int pieceAtSquare(int square, Position& position);
-int popLSB(uint64_t &bb);
-std::string utf8(char32_t cp);

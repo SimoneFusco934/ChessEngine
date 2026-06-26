@@ -1,12 +1,13 @@
-#include "ChessEngine.hpp"
-#include "ChessUtilities.hpp"
 #include <iostream>
 #include <chrono>
 #include <iomanip>
-
-// g++ -std=c++17 -O3 -march=native -flto -Wall -Wextra ChessEngine.cpp ChessUtilities.cpp moveGenerationTest.cpp -o moveTest
-
-// read FEN string
+#include "../Board/position.hpp"
+#include "../Move/move_list.hpp"
+#include "../Move/move_stack.hpp"
+#include "../Move/make_move.hpp"
+#include "../Move/unmake_move.hpp"
+#include "../MoveGen/movegen.hpp"
+#include "../MoveGen/initLUT.hpp"
 
 #define DEPTH 7
 #define FEN_STRING "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -32,41 +33,6 @@ std::string moveToString(uint16_t move){
 }
 
 // SINGLE COUNT PERFT
-uint64_t perftSingleCopy(Position& position, MoveList& move_list, int depth){
-
-  if(depth == 0){
-      return 1ULL;
-  } 
-
-  uint64_t nodes = 0;
-
-  uint64_t parents_moves = move_list.head;
-
-  generateLegalMoves(position, move_list);
-
-  for(int i = parents_moves; i < move_list.head; i++){
-
-    int move = move_list.moves[i];
-
-    Position copy = position;
-
-    makeMoveCopy(copy, move);
-
-    uint64_t child_nodes = perftSingleCopy(copy, move_list, depth - 1);
-
-    if(depth == DEPTH){
-      std::cout << "Nodi figli di " << moveToString(move) << ": " << child_nodes << std::endl;
-    }
-
-    nodes += child_nodes;
-  }
-
-  move_list.head = parents_moves;
-
-  //return captures;
-  return nodes;
-}
-
 uint64_t perftSingle(Position& position, MoveList& move_list, MoveStack& move_stack, int depth){
 
   if(depth == 0){
@@ -98,49 +64,11 @@ uint64_t perftSingle(Position& position, MoveList& move_list, MoveStack& move_st
 
   move_list.head = parents_moves;
 
-  //return captures;
   return nodes;
 }
 
 
 // BULK COUNT PERFT
-uint64_t perftBulkCopy(Position& position, MoveList& move_list, int depth){
-
-  uint64_t nodes = 0;
-
-  uint64_t parents_moves = move_list.head;
-
-  generateLegalMoves(position, move_list);
-
-  if(depth == 1){
-    nodes += (move_list.head - parents_moves);
-    move_list.head = parents_moves;
-    return nodes;
-  } 
-
-  for(int i = parents_moves; i < move_list.head; i++){
-
-    int move = move_list.moves[i];
-
-    Position copy = position;
-
-    makeMoveCopy(copy, move);
-
-    uint64_t child_nodes = perftBulkCopy(copy, move_list, depth - 1);
-
-    if(depth == DEPTH){
-      std::cout << "Nodi figli di " << moveToString(move) << ": " << child_nodes << std::endl;
-    }
-
-    nodes += child_nodes;
-  }
-
-  move_list.head = parents_moves;
-
-  //return captures;
-  return nodes;
-}
-
 uint64_t perftBulk(Position& position, MoveList& move_list,  MoveStack& move_stack, int depth){
 
   uint64_t nodes = 0;
@@ -190,9 +118,7 @@ int main(){
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  //uint64_t nodes = perftSingleCopy(position, move_list, DEPTH);
   uint64_t nodes = perftBulk(position, move_list, move_stack, DEPTH);
-  //uint64_t nodes = perftBulk(position, move_list, move_stack, DEPTH);
 
   auto end = std::chrono::high_resolution_clock::now();
 

@@ -2,12 +2,20 @@
 #include <cmath>
 #include <iostream>
 
-#include "ChessGUI.hpp"
-#include "ChessUtilities.hpp"
-#include "ChessEngine.hpp"
+#include "MoveGen/initLUT.hpp"
+#include "Core/pop_lsb.hpp"
+#include "Board/position.hpp"
+#include "Move/move_list.hpp"
+#include "Move/move_stack.hpp"
+#include "MoveGen/movegen.hpp"
+#include "Move/make_move.hpp"
+#include "Move/unmake_move.hpp"
 
 #define WINDOW_SIZE 800.0f
 #define TILE_SIZE 100.0f
+
+void drawBitboard(sf::RenderWindow& window, uint64_t piece_bitboard, sf::Sprite& piece_sprite);
+void drawMoves(sf::RenderWindow& window, uint64_t valid_moves_bitmap, sf::CircleShape& move_sprite);
 
 int player = 0; // 0 for white and 1 for black
 
@@ -290,4 +298,3 @@ int main() {
 
   return 0;
 }
-
